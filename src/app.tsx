@@ -4,6 +4,7 @@ import { readNight } from './digest/read-night.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
 import { Layout } from './views/layout.js';
+import { Digest } from './views/digest.js';
 import { StatusBoard } from './views/status.js';
 
 export function createApp(config: RigConfig = loadConfig()) {
@@ -15,6 +16,18 @@ export function createApp(config: RigConfig = loadConfig()) {
     const digest = readNight(config.runsDir, c.req.param('night'));
     if (digest === null) return c.json({ error: 'night not found' }, 404);
     return c.json(digest);
+  });
+
+  app.get('/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const digest = readNight(config.runsDir, night);
+    if (!digest) return c.notFound();
+
+    return c.html(
+      <Layout title={`digest · ${night}`} lane={lane()}>
+        <Digest night={night} digest={digest} />
+      </Layout>,
+    );
   });
 
   app.get('/', (c) =>
